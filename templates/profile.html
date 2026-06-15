@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="profile-wrapper">
+    <div class="profile-sidebar">
+        {% if custom_user.avatar_path %}
+            <img src="{{ custom_user.avatar_path }}" alt="Аватар профиля" class="avatar">
+        {% else %}
+            <img src="{% static 'images/default-avatar.png' %}" alt="Аватар" class="avatar">
+        {% endif %}
+        
+        <h3>{{ custom_user.full_name }}</h3>
+        <p style="color: #64748b; margin-bottom: 20px;">@{{ custom_user.username }}</p>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="file" name="avatar" accept="image/png, image/jpeg" required>
+            </div>
+            <button type="submit" class="btn" style="padding: 8px 12px; font-size: 0.9rem;">Обновить аватар</button>
+        </form>
+    </div>
+
+    <div class="profile-main">
+        <h2>Мои бронирования</h2>
+        <div class="booking-list">
+            {% for booking in bookings %}
+            <div class="booking-item">
+                <div>
+                    <h4>Номер №{{ booking.room.room_number }} ({{ booking.room.get_type_display|upper }})</h4>
+                    <p style="font-size: 0.9rem; color: #475569; margin: 4px 0;">
+                        Даты: <strong>{{ booking.check_in_date }}</strong> — <strong>{{ booking.check_out_date }}</strong>
+                    </p>
+                    <p style="font-size: 0.95rem;">Итоговая стоимость: <strong>{{ booking.total_price }} KZT</strong></p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="status-{{ booking.status }}">
+                        {% if booking.status == 'active' %}Активно{% else %}Отменено{% endif %}
+                    </span>
+                    {% if booking.status == 'active' %}
+                        <div style="margin-top: 10px;">
+                            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-danger">Отменить</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p>У вас пока нет активных или отмененных бронирований.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
